@@ -425,7 +425,11 @@ void VulkanCommandProcessor::PerformSwap(uint32_t frontbuffer_ptr,
   }
 
   // Issue the commands to copy the game's frontbuffer to our backbuffer.
-  auto texture = texture_cache_->Lookup(texture_info);
+  // auto texture = texture_cache_->Lookup(texture_info);
+  auto texture = texture_cache_->LookupAddress(
+    frontbuffer_ptr, xe::round_up(frontbuffer_width, 32),
+    frontbuffer_height, TextureFormat::k_8_8_8_8);
+
   if (texture) {
     texture->in_flight_fence = current_batch_fence_;
 
@@ -461,7 +465,7 @@ void VulkanCommandProcessor::PerformSwap(uint32_t frontbuffer_ptr,
     // Part of the source image that we want to blit from.
     VkRect2D src_rect = {
         {0, 0},
-        {texture->texture_info.width + 1, texture->texture_info.height + 1},
+        {texture->texture_info.width, texture->texture_info.height},
     };
     VkRect2D dst_rect = {{0, 0}, {frontbuffer_width, frontbuffer_height}};
 
