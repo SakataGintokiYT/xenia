@@ -580,7 +580,7 @@ VkDescriptorSet BufferCache::PrepareVertexSet(
   uint64_t hash = XXH64_digest(&hash_state);
   for (auto it = vertex_sets_.find(hash); it != vertex_sets_.end(); ++it) {
     // TODO(DrChat): We need to compare the bindings and ensure they're equal.
-    return it->second;
+    //return it->second;
   }
 
   if (!vertex_descriptor_pool_->has_open_batch()) {
