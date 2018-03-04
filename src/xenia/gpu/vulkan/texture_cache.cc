@@ -237,9 +237,6 @@ void TextureCache::Shutdown() {
 void TextureCache::SetupEmptySet() {
   // Create an image first.
   VkImageCreateInfo image_info = {};
-TextureCache::TextureRegion* TextureCache::AllocateTextureRegion(
-    Texture* texture, VkOffset3D region_offset, VkExtent3D region_size,
-    VkFormatFeatureFlags required_flags) {
   image_info.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
   image_info.imageType = VK_IMAGE_TYPE_2D;
   VkFormat format = VK_FORMAT_R8G8B8A8_UNORM;
@@ -358,6 +355,9 @@ void TextureCache::DestroyEmptySet() {
   vkFreeMemory(*device_, empty_image_memory_, nullptr);
 }
 
+TextureCache::TextureRegion* TextureCache::AllocateTextureRegion(
+  Texture* texture, VkOffset3D region_offset, VkExtent3D region_size,
+  VkFormatFeatureFlags required_flags) {
   // Create an image first.
   VkImageCreateInfo image_info = {};
   image_info.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
@@ -589,7 +589,6 @@ TextureCache::Texture* TextureCache::DemandResolveTexture(
 
   // No texture at this location. Make a new one.
   auto texture = AllocateTexture(texture_info, required_flags);
-  texture->is_full_texture = false;
   if (!texture) {
     // Failed to allocate texture (out of memory?)
     assert_always();
@@ -672,7 +671,6 @@ TextureCache::TextureRegion* TextureCache::DemandRegion(
       // Exact match.
       // TODO: Lazy match (at an offset)
       // Upgrade this texture to a full texture.
-      texture->is_full_texture = true;
       texture->texture_info = texture_info;
 
       if (texture->access_watch_handle) {
@@ -702,7 +700,7 @@ TextureCache::TextureRegion* TextureCache::DemandRegion(
 
       textures_[texture_hash] = *it;
       it = resolve_textures_.erase(it);
-      return textures_[texture_hash];
+      return textures_[texture_hash]->base_region;
     }
   }
 
